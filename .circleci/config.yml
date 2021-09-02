@@ -73,7 +73,7 @@ jobs:
       - restore_cache: # Restore from cache
           keys:
             - frontend-build
-      - run: npm run test # Your job code here
+      - run: cd frontend && npm run test # Your job code here
                 
   test-backend:
     docker:
@@ -83,7 +83,7 @@ jobs:
       - restore_cache: # Restore from cache
           keys:
             - backend-build
-      - run: npm run test  #Your job code here
+      - run: cd backend && npm run test  #Your job code here
             
 #   scan-frontend:
 #     docker:
