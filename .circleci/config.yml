@@ -71,7 +71,8 @@ jobs:
     steps:
       - checkout # Checkout code from git
       - retore_cache: # Restore from cache
-          - frontend-build
+          keys:
+            - frontend-build
       - run: npm run test # Your job code here
                 
   test-backend:
@@ -80,7 +81,8 @@ jobs:
     steps:
       - checkout # Checkout code from git
       - retore_cache: # Restore from cache
-          - backend-build
+          keys:
+            - backend-build
       - run: npm run test  #Your job code here
             
 #   scan-frontend:
