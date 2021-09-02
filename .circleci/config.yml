@@ -80,7 +80,7 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout # Checkout code from git
-      - retore_cache: # Restore from cache
+      - restore_cache: # Restore from cache
           keys:
             - backend-build
       - run: npm run test  #Your job code here
