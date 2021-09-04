@@ -47,17 +47,17 @@ jobs:
       - run:
           name: Build front-end
           command: |
-            cd frontend && npm run buil
+            cd frontend && npm run build
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - slack/notify:
-          color: "#42e2f4"
-          mentions: "Mina,"
-          message: A custom message to notify the channel about the latest build
-      - slack/status:
-          fail_only: true
-          mentions: "Mina"
+      # - slack/notify:
+      #     color: "#42e2f4"
+      #     mentions: "Mina,"
+      #     message: A custom message to notify the channel about the latest build
+      # - slack/status:
+      #     fail_only: true
+      #     mentions: "Mina"
 
   build-backend:
     docker:
