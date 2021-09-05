@@ -7,6 +7,7 @@ commands:
           when: on_fail
           command: |
             aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
             aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
 orbs:
@@ -263,9 +264,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install AWS CLI
+          name: Install AWS CLI Dep.
           command: |
             apk add --update curl sudo unzip
+      - aws-cli/install
       - add_ssh_keys:
           fingerprints: ["57:b5:3c:2c:80:24:a1:1a:80:3e:28:e6:8c:81:01:39"]
       - attach_workspace:
@@ -284,11 +286,6 @@ jobs:
            echo "host_key_checking = False" >>  ~/.ansible.cfg
       - restore_cache:
           keys: [backend-dist]
-      - run:
-          name: Deploy
-          command: |
-            cd /home
-            tar czf dist.tar.gz  home/circleci/project/backend/dist
 
       - run:
           name: Configure server
