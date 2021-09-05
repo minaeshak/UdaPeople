@@ -244,21 +244,21 @@ jobs:
         #   name: Install dependencies
         #   command: |
         #     # your code here
-      - run:
-          name: Get backend url
-          command: |
-            BACKEND_IP=${curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend-url-${CIRCLE_WORKFLOW_ID:0:7}}   
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
-      - run:
-          name: Deploy frontend objects
-          command: |
-            cd frontend 
-            npm i
-            npm run build
-            aws s3 cp frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-      - destroy-environment
-                    
+        - run:
+            name: Get backend url
+            command: |
+              BACKEND_IP=${curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend-url-${CIRCLE_WORKFLOW_ID:0:7}}   
+              export API_URL="http://${BACKEND_IP}:3030"
+              echo "${API_URL}"
+        - run:
+            name: Deploy frontend objects
+            command: |
+              cd frontend 
+              npm i
+              npm run build
+              aws s3 cp frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+        - destroy-environment
+                      
 #   deploy-backend:
 #     docker:
 #       # Docker image here that supports Ansible
@@ -356,8 +356,8 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #     requires: [run-migrations]
+      - deploy-frontend:
+          requires: [run-migrations]
       # - deploy-backend:
       #     requires: [run-migrations]
       # - smoke-test:
