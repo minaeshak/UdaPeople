@@ -172,7 +172,6 @@ jobs:
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
-          # Docker image here that supports Ansible
     steps:
       - checkout # Checkout code from git
       - add_ssh_keys:
@@ -239,11 +238,6 @@ jobs:
     steps:
       - checkout
       - aws-cli/install
-
-      # - run:
-      #   name: Install dependencies
-      #   command: |
-      #     # your code here
       - run:
           name: Get backend url and build 
           command: |
@@ -260,22 +254,36 @@ jobs:
             aws s3 cp dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
       - destroy-environment
                       
-#   deploy-backend:
-#     docker:
-#       # Docker image here that supports Ansible
-#     steps:
-#       # Checkout code from git
-#       # Add ssh keys with fingerprint
-#       # attach workspace
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Deploy backend
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure  
+  deploy-backend:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["57:b5:3c:2c:80:24:a1:1a:80:3e:28:e6:8c:81:01:39"]
+      - attach_workspace:
+          at: ~/project/.circleci/ansible/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: ssh configure
+          command: |
+           echo "[defaults]" > ~/.ansible.cfg
+      - run:
+          name: ssh configure 2
+          command: |
+           echo "host_key_checking = False" >>  ~/.ansible.cfg
+      - run:
+          name: Configure server
+          command: |
+            pwd
+            ls -lh
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
+      - destroy-environment
+
+      # Here's where you will add some code to rollback on failure  
 
 #   smoke-test:
 #     docker:
@@ -339,7 +347,7 @@ workflows:
   default:
     jobs:
       # - build-frontend
-      # - build-backend
+      - build-backend
       # - test-frontend:
       #     requires: [build-frontend]
       # - test-backend:
@@ -359,8 +367,8 @@ workflows:
           requires: [configure-infrastructure]
       - deploy-frontend:
           requires: [run-migrations]
-      # - deploy-backend:
-      #     requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
