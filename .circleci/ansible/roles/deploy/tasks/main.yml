@@ -12,4 +12,6 @@
   shell: |
     cd /home/ubuntu/backend 
     npm i
+    npm build
+    cd dist
     pm2 start npm --name backend -- start

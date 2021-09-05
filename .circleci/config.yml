@@ -9,6 +9,22 @@ commands:
             aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
             aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
             aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+  revert-migrations:
+    steps:
+      - run:
+          name: Revert Migrations
+          when: on_fail
+          command: |
+            STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7})
+            if (( $STATUS==1 ))
+            then
+            echo "Reverting Migration"
+            npm run migrations:revert
+            else
+            echo "No Migrations Done"
+            fi
+
+
 
 orbs:
   node: circleci/node@3.0.0
@@ -171,7 +187,8 @@ jobs:
           root: ~/project/.circleci/ansible/
           paths:
             - inventory.txt
-      # Here's where you will add some code to rollback on failure      
+      - destroy-environment
+      - revert-migrations
 
   configure-infrastructure:
     docker:
@@ -201,8 +218,7 @@ jobs:
             ls -lh
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       - destroy-environment
-      # Here's where you will add some code to rollback on failure      
-
+      - revert-migrations
   run-migrations:
     docker:
       - image: circleci/node:13.8.0    
@@ -235,6 +251,8 @@ jobs:
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "1" https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7} 
             fi
       - destroy-environment
+      - revert-migrations
+
 
   deploy-frontend:
     docker:
@@ -257,6 +275,8 @@ jobs:
             cd frontend
             aws s3 cp dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
       - destroy-environment
+      - revert-migrations
+
                       
   deploy-backend:
     docker:
@@ -313,46 +333,58 @@ jobs:
           command: |
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-environment
+      - revert-migrations
 
+
+
+  smoke-test:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update tar gzip curl
+      - run:
+          name: Get backend url and test
+          command: |
+            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend-url-${CIRCLE_WORKFLOW_ID:0:7}) 
+            URL=$(http://${BACKEND_IP}:3030/api/status)
+            if curl -s ${URL}
+            then
+            return 1
+            else
+            return 0
+            fi
+      - run:
+          name: Frontend smoke test.
+          command: |
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-eu-central-1.amazonaws.com"
+            if curl -s ${URL}
+            then
+            return 1
+            else
+            return 0
+            fi
+      - destroy-environment
+      - revert-migrations
+
+
+  # cloudfront-update:
+  #   docker:
+  #     - image: amazon/aws-cli
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           # your code here
+  #     - run:
+  #         name: Update cloudfront distribution
+  #         command: |
+  #           # your code here
       # Here's where you will add some code to rollback on failure  
-
-#   smoke-test:
-#     docker:
-#       # Lightweight Docker image 
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Get backend url
-#           command: |
-#             # your code here
-#       - run:
-#           name: Backend smoke test.
-#           command: |
-#             # your code here
-#       - run:
-#           name: Frontend smoke test.
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure  
-
-#   cloudfront-update:
-#     docker:
-#       # Docker image here that supports AWS CLI
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Update cloudfront distribution
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure  
 
   # cleanup:
   #   docker:
