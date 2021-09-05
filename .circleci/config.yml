@@ -1,6 +1,6 @@
 version: 2.1
 commands:
-  destroy-enviroment:
+  destroy-environment:
     steps:
       - run:
           name: remove created Stacks and S3 bucket
