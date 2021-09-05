@@ -150,51 +150,62 @@ jobs:
             BACKEND_URL=$(aws ec2 describe-instances --region eu-central-1 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"  --output text) 
             echo $BACKEND_URL >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
-            curl -H "Content-Type: text/plain" -H "token: 71d21d62-9a32-44e1-8840-019cd3da1255" --request PUT --data "$BACKEND_URL" https://api.memstash.io/values/${CIRCLE_WORKFLOW_ID:0:7}
-
-                   
+            curl -H "Content-Type: text/plain" -H "token: 71d21d62-9a32-44e1-8840-019cd3da1255" --request PUT --data "$BACKEND_URL" https://api.memstash.io/values/${CIRCLE_WORKFLOW_ID:0:7}                   
       - persist_to_workspace:
-          root: ~/
+          root: ~/project/.circleci/ansible/
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - inventory.txt
 
       # Here's where you will add some code to rollback on failure      
 
-#   configure-infrastructure:
-#     docker:
-#       # Docker image here that supports Ansible
-#     steps:
-#       # Checkout code from git
-#       # Add ssh keys with fingerprint
-#       # attach workspace
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # Your code here
-#             exit 1
-#       - run:
-#           name: Configure server
-#           command: |
-#             # Your code here
-#             exit 1
-#       # Here's where you will add some code to rollback on failure      
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+          # Docker image here that supports Ansible
+    steps:
+      - checkout # Checkout code from git
+      - add_ssh_keys:
+        fingerprints: ["57:b5:3c:2c:80:24:a1:1a:80:3e:28:e6:8c:81:01:39"] # Add ssh keys with fingerprint
+      - attach_workspace:
+          at: ~/project/.circleci/ansible/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: ssh configure
+          command: |
+           echo "[defaults]" > ~/.ansible.cfg
+      - run:
+          name: ssh configure 2
+          command: |
+           echo "host_key_checking = False" >>  ~/.ansible.cfg
+      - run:
+          name: Configure server
+          command: |
+            ansible-playbook -i inventory.txt configure-server.yml
 
-#   run-migrations:
-#     docker:
-#       # Docker image here that supports NodeJS
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Run migrations
-#           command: |
-#             # Your code here
-#             exit 1
-#       - run:
-#           name: Send migration results to memstash
-#           command: |
-#             # Your code here
-#             exit 1
-#      # Here's where you will add some code to rollback on failure      
+      # Here's where you will add some code to rollback on failure      
+
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0    
+      steps:
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm i
+            npm run migration > migration.log.txt
+      - run:
+          name: Send migration results to memstash
+          command: |
+            if  grep "has been executed successfully" backend/migration.log.txt
+            then
+            curl -H "Content-Type: text/plain" -H "token: 71d21d62-9a32-44e1-8840-019cd3da1255" --request PUT --data "1" https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7} 
+            fi
+     # Here's where you will add some code to rollback on failure      
 
 #   deploy-frontend:
 #     docker:
@@ -306,7 +317,7 @@ workflows:
       - scan-frontend:
           requires: [build-frontend]
       - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          requires: [scan-backend,scan-frontend,test-frontend,test-backend]
       #     filters:
       #       branches:
       #         only: [test-feature-branch]
