@@ -155,7 +155,6 @@ jobs:
           root: ~/project/.circleci/ansible/
           paths:
             - inventory.txt
-
       # Here's where you will add some code to rollback on failure      
 
   configure-infrastructure:
@@ -183,7 +182,7 @@ jobs:
       - run:
           name: Configure server
           command: |
-            ansible-playbook -i inventory.txt configure-server.yml
+            ansible-playbook -i inventory.txt .circleci/ansible/configure-server.yml
 
       # Here's where you will add some code to rollback on failure      
 
