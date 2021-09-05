@@ -288,7 +288,7 @@ jobs:
           name: Deploy
           command: |
             cd /home
-            tar czf dist.tar.gz -P /home/circleci/project/backend/dist
+            tar czf dist.tar.gz  /home/circleci/project/backend/dist
 
       - run:
           name: Configure server
