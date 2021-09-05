@@ -15,6 +15,7 @@ commands:
           name: Revert Migrations
           when: on_fail
           command: |
+            apk add --no-cache curl
             STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7})
             if (( $STATUS==1 ))
             then
@@ -292,7 +293,7 @@ jobs:
             && pip3 install --upgrade pip \
             && pip3 install \
             awscli \
-            nodejs
+            nodejs \
             npm
 
       - add_ssh_keys:
@@ -318,19 +319,9 @@ jobs:
           name: Passing Env. Variables
           command: |
             cd backend
-            ls -lah
-            echo ENVIRONMENT=production > .env
-            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> .env
-            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> .env
-            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> .env
-            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> .env
-            echo TYPEORM_HOST=$TYPEORM_HOST >> .env
-            echo TYPEORM_PORT=$TYPEORM_PORT >> .env
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> .env
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> .env
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> .env
             npm i
             npm run build
+            ls -lah
       - run:
           name: Configure server
           no_output_timeout: 30m
