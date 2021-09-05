@@ -12,6 +12,4 @@
   shell: |
     cd /home/ubuntu/backend 
     npm i
-    npm run build
-    ls -lah
     pm2 start npm --name backend -- start
