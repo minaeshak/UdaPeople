@@ -264,10 +264,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install AWS CLI Dep.
+          name: Install AWS CLI 
           command: |
-            apk add --update curl sudo unzip
-      - aws-cli/install
+            apk add --no-cache \
+            python3 \
+            py3-pip \
+            && pip3 install --upgrade pip \
+            && pip3 install \
+            awscli 
+
       - add_ssh_keys:
           fingerprints: ["57:b5:3c:2c:80:24:a1:1a:80:3e:28:e6:8c:81:01:39"]
       - attach_workspace:
@@ -286,6 +291,7 @@ jobs:
            echo "host_key_checking = False" >>  ~/.ansible.cfg
       - restore_cache:
           keys: [backend-dist]
+
 
       - run:
           name: Configure server
