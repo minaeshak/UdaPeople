@@ -291,7 +291,9 @@ jobs:
             py3-pip \
             && pip3 install --upgrade pip \
             && pip3 install \
-            awscli 
+            awscli \
+            nodejs
+            npm
 
       - add_ssh_keys:
           fingerprints: ["57:b5:3c:2c:80:24:a1:1a:80:3e:28:e6:8c:81:01:39"]
@@ -327,6 +329,8 @@ jobs:
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> .env
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> .env
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> .env
+            npm i
+            npm run build
       - run:
           name: Configure server
           no_output_timeout: 30m
