@@ -245,18 +245,19 @@ jobs:
       #   command: |
       #     # your code here
       - run:
-          name: Get backend url
+          name: Get backend url and build 
           command: |
+            cd frontend
             BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend-url-${CIRCLE_WORKFLOW_ID:0:7}) 
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
+            npm i
+            npm run build
       - run:
           name: Deploy frontend objects
           command: |
-            cd frontend 
-            npm i
-            npm run build
-            aws s3 cp frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            cd frontend
+            aws s3 cp dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
       - destroy-environment
                       
 #   deploy-backend:
