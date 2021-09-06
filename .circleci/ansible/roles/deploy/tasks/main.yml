@@ -9,7 +9,8 @@
 
 - name: Run pm2
   become: true
+  warn: false
   shell: |
-    tar xvf dist.tar.gz
+    tar -xvf dist.tar.gz
     cd dist
     pm2 start npm --name backend -- start
