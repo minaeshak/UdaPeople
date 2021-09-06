@@ -4,7 +4,7 @@
     state: directory
 - name: Copy from CircleCI
   copy:
-    src: /root/project/backend/dist.tar.gz
+    src: /root/project/backend/artifacts.tar.gz
     dest: /home/ubuntu/backend
 
 - name: Run pm2
