@@ -319,9 +319,7 @@ jobs:
           name: Build Backend
           command: |
             cd backend
-            npm i
-            npm run build
-            tar cvf dist.tar.gz dist 
+            tar cvf artifacts.tar.gz .
             ls -lah 
       - run:
           name: Configure server

@@ -12,6 +12,8 @@
   args:
     warn: false
   shell: |
-    tar -xvf dist.tar.gz
-    cd dist
+    cd /home/ubuntu/backend
+    tar -xvf artifacts.tar.gz
+    npm i
+    npm run build
     pm2 start npm --name backend -- start
