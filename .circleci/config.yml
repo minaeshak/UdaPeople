@@ -281,20 +281,19 @@ jobs:
                       
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
-          name: Install AWS CLI 
+          name: Install dependancies
           command: |
             apk add --no-cache \
             python3 \
             py3-pip \
             && pip3 install --upgrade pip \
             && pip3 install \
-            awscli \
-            nodejs \
-            npm
+            awscli 
+
 
       - add_ssh_keys:
           fingerprints: ["57:b5:3c:2c:80:24:a1:1a:80:3e:28:e6:8c:81:01:39"]
