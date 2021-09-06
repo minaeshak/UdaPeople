@@ -344,13 +344,23 @@ jobs:
 
   smoke-test:
     docker:
-      - image: amazon/aws-cli
+      - image: alpine
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            yum install tar gzip curl -y
+        name: Install AWS CLI 
+        command: |
+          apk add --no-cache \
+          python3 \
+          py3-pip \
+          && pip3 install --upgrade pip \
+          && pip3 install \
+          awscli  \ 
+          curl
+      # - run:
+      #     name: Install dependencies
+      #     command: |
+      #       yum install tar gzip curl -y
       - run:
           name: Get backend url and test
           command: |
@@ -372,7 +382,7 @@ jobs:
             else
             return 0
             fi
-      # - destroy-environment
+      - destroy-environment
       - revert-migrations
 
 
