@@ -247,11 +247,11 @@ jobs:
       - run:
           name: Send migration results to memstash
           command: |
-            if  grep "has been executed successfully" backend/migration.log.txt
+            if  grep "successfully" backend/migration.log.txt
             then
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "1" https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7} 
             else
-             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "0" https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7}            
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "0" https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7}            
             fi
       - destroy-environment
       - revert-migrations
@@ -367,8 +367,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-eu-central-1.amazonaws.com"
-            if curl -s ${URL}
+            if curl -s http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-eu-central-1.amazonaws.com | grep "Welcome"
             then
             exit 0
             else
