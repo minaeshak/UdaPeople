@@ -250,6 +250,8 @@ jobs:
             if  grep "has been executed successfully" backend/migration.log.txt
             then
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "1" https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7} 
+            else
+             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "0" https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7}            
             fi
       - destroy-environment
       - revert-migrations
@@ -344,23 +346,13 @@ jobs:
 
   smoke-test:
     docker:
-      - image: alpine
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run:
-          name: Install AWS CLI 
+          name: Install dependencies
           command: |
-            apk add --no-cache \
-            python3 \
-            py3-pip \
-            && pip3 install --upgrade pip \
-            && pip3 install \
-            awscli  \ 
-            curl
-      # - run:
-      #     name: Install dependencies
-      #     command: |
-      #       yum install tar gzip curl -y
+            yum install tar gzip curl -y
       - run:
           name: Get backend url and test
           command: |
@@ -368,9 +360,9 @@ jobs:
             URL="http://${BACKEND_IP}:3030/api/status"
             if curl -s ${URL}
             then
-            return 1
+            exit 0
             else
-            return 0
+            exit 1
             fi
       - run:
           name: Frontend smoke test.
@@ -378,9 +370,9 @@ jobs:
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-eu-central-1.amazonaws.com"
             if curl -s ${URL}
             then
-            return 1
+            exit 0
             else
-            return 0
+            exit 1
             fi
       - destroy-environment
       - revert-migrations
