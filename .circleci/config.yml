@@ -15,7 +15,7 @@ commands:
           name: Revert Migrations
           when: on_fail
           command: |
-            apk add --no-cache curl
+            yum install curl -y
             STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7})
             if (( $STATUS==1 ))
             then
@@ -355,7 +355,7 @@ jobs:
           name: Get backend url and test
           command: |
             BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend-url-${CIRCLE_WORKFLOW_ID:0:7}) 
-            URL=$(http://${BACKEND_IP}:3030/api/status)
+            URL="http://${BACKEND_IP}:3030/api/status"
             if curl -s ${URL}
             then
             return 1
@@ -372,7 +372,7 @@ jobs:
             else
             return 0
             fi
-      - destroy-environment
+      # - destroy-environment
       - revert-migrations
 
 
