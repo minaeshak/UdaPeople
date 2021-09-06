@@ -321,6 +321,7 @@ jobs:
             cd backend
             npm i
             npm run build
+            tar cvf dist.tar.gz dist 
             ls -lah
       - run:
           name: Configure server
