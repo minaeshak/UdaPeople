@@ -243,11 +243,12 @@ jobs:
             cat .env
             npm i
             npm run migrations > migration.log.txt
-            tail -50 migration.log.txt
+            cat migration.log.txt
       - run:
           name: Send migration results to memstash
           command: |
-            if  grep "successfully" backend/migration.log.txt
+            cd backend
+            if  grep "successfully" migration.log.txt
             then
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "1" https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:7} 
             else
@@ -377,39 +378,45 @@ jobs:
       - revert-migrations
 
 
-  # cloudfront-update:
-  #   docker:
-  #     - image: amazon/aws-cli
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           # your code here
-  #     - run:
-  #         name: Update cloudfront distribution
-  #         command: |
-  #           # your code here
-      # Here's where you will add some code to rollback on failure  
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum install gzip -y 
+            yum install tar -y         
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            aws cloudformation deploy \
+            --template-file .circleci/files/cloudfront.yml \
+            --tags project=udapeople \
+            --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}       
+      - destroy-environment
+      - revert-migrations
 
   # cleanup:
   #   docker:
   #     - image: amazon/aws-cli
   #   steps:
   #     - checkout #code from git
-      # - run:
-      #     name: Get old stack workflow id
-      #     command: |
-      #       # your code here
-      #       export OldWorkflowID="the id here"
-      #       export STACKS=[] #put the list of stacks here
-      # - run:
-      #     name: Remove old stacks and files
-      #     command: |
-      #       if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-      #       then
-      #         # your code here
-      #       fi
+  #     - run:
+  #         name: Get old stack workflow id
+  #         command: |
+  #           # your code here
+  #           export OldWorkflowID="the id here"
+  #           export STACKS=[] #put the list of stacks here
+  #     - run:
+  #         name: Remove old stacks and files
+  #         command: |
+  #           if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+  #           then
+  #             # your code here
+  #           fi
             
 
 workflows:
@@ -440,7 +447,7 @@ workflows:
           requires: [run-migrations]
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
-      # - cloudfront-update
-      #     requires: [smoke-test]
+      - cloudfront-update:
+          requires: [smoke-test]
       # - cleanup
       #     requires: [smoke-test]
