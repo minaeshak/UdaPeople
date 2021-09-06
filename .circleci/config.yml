@@ -292,13 +292,8 @@ jobs:
             py3-pip \
             && pip3 install --upgrade pip \
             && pip3 install \
-            awscli \
-            nodejs \
-            npm
-            cd backend
-            npm i
-            npm run build
-            ls -lah
+            awscli 
+
       - add_ssh_keys:
           fingerprints: ["57:b5:3c:2c:80:24:a1:1a:80:3e:28:e6:8c:81:01:39"]
       - attach_workspace:
@@ -307,6 +302,8 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible
+            apk add --update nodejs
+            apk add --update npm
       - run:
           name: ssh configure
           command: |
@@ -318,13 +315,13 @@ jobs:
       - restore_cache:
           keys: [backend-dist]
 
-      # - run: 
-      #     name: Passing Env. Variables
-      #     command: |
-      #       cd backend
-      #       npm i
-      #       npm run build
-      #       ls -lah
+      - run: 
+          name: Build Backend
+          command: |
+            cd backend
+            npm i
+            npm run build
+            ls -lah
       - run:
           name: Configure server
           no_output_timeout: 30m
