@@ -394,9 +394,7 @@ jobs:
             export OldWorkflowID=$(aws cloudformation \
             list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
             --no-paginate --output text)
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-            
+            echo $OldWorkflowID
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
             --tags project=udapeople \
@@ -410,20 +408,18 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout 
-      # - run:
-      #     name: Get old stack workflow id
-      #     command: |
-      #       export OldWorkflowID=$(aws cloudformation \
-      #       list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-      #       --no-paginate --output text)
-      #       export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-      #       --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
+      - run:
+          name: Get old stack workflow id
+          command: |
+
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
       - run:
           name: Remove old stacks and files
           command: |
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
-              echo ${OldWorkflowID}
+              echo $OldWorkflowID
               aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
               echo "Backend Cleaned"
               aws s3 rm s3://udapeople-${OldWorkflowID} --recursive
