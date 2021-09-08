@@ -1,5 +1,5 @@
 https://github.com/minaeshak/UdaPeople
-http://udapeople-7d1e51c.s3-website.eu-central-1.amazonaws.com/
+http://udapeople-9e4db9d.s3-website.eu-central-1.amazonaws.com/
 d33lmr28dx75ir.cloudfront.net	
-http://ec2-3-121-160-209.eu-central-1.compute.amazonaws.com:3030/api/status
+http://ec2-3-120-16-199.eu-central-1.compute.amazonaws.com:3030/api/status
 http://52.59.253.209:9090/graph
