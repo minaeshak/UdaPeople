@@ -112,7 +112,7 @@ jobs:
       - restore_cache: # Restore from cache
           keys:
             - frontend-build
-      - run : cd frontend && npm i
+      - run: cd frontend && npm i
       - run:  cd frontend && npm audit fix --audit-level=critical --force # Your job code here
 
   scan-backend:
@@ -123,6 +123,7 @@ jobs:
       - restore_cache: # Restore from cache
           keys:
             - backend-build
+      - run: npm i
       - run: cd backend && npm audit fix --audit-level=critical --force
 
 # Your job code here
